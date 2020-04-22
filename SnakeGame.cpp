@@ -6,6 +6,22 @@
 #include<list>
 #include<time.h>
 
+/*
+	IMPORTANT!!!!
+	~~~~~~~~~~~~~
+	READ ME BEFORE RUNNING!!! This program expects the console dimensions to be set to 
+	100 Columns by 30 Rows. I recommend a small font "Consolas" at size 16. You can do this
+	by running the program, and right clicking on the console title bar, and specifying 
+	the properties. You can also choose to default to them in the future.
+	
+	Controls: A = Left, D = Right, W = Up, S = Down
+
+	CONTACT:
+	Email : deepakky2810@gmail.com
+	LinkedIn : https://www.linkedin.com/in/deepak-kumar-yadav-149932169
+
+	Last updated on : 22/04/2020
+*/
 
 using namespace std;
 
@@ -249,5 +265,5 @@ int main()
 	}
 
 	cout << "Your Score: " << nScore<<"\n\n\n";
-	
+	return 0;
 }
