@@ -63,6 +63,7 @@ StyleCopReport.xml
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+*.sln
 *_i.c
 *_p.c
 *_h.h
