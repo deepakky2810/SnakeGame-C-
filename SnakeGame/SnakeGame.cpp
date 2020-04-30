@@ -14,7 +14,7 @@
 	by running the program, and right clicking on the console title bar, and specifying
 	the properties. You can also choose to default to them in the future.
 
-	Controls: A = Left, D = Right, W = Up, S = Down
+	Controls: A / Left Arrow = Left, D / Right Arrow = Right, W / Up Arrow = Up, S / Down Arrow = Down
 	CONTACT:
 	Email : deepakky2810@gmail.com
 	LinkedIn : https://www.linkedin.com/in/deepak-kumar-yadav-149932169
@@ -55,31 +55,30 @@ bool isSnakeOut(int nCurrentSnakePos, set<int>* sSnake)
 	}
 }
 
-//Increments the length of the snake or adds a new cell to the snake body
+//Increments the length of the snake(or adds a new cell to the snake body)
 void snakeLengthIncrementer(list<snakePositionLocater>* mSnake, int nSnakeLastBlockPos, char cSnakeLastBlockMovementDir, set<int>* sSnake, int* nSnakeCurrentLength)
 {
 	snakePositionLocater newsnakePositionLocater = { nSnakeLastBlockPos, cSnakeLastBlockMovementDir };
-	mSnake->push_back(newsnakePositionLocater);
-	sSnake->insert(nSnakeLastBlockPos);
-	(*nSnakeCurrentLength)++;
+	mSnake->push_back(newsnakePositionLocater); //Add a new block at the end of snake's body
+	sSnake->insert(nSnakeLastBlockPos); //Adds that position to the s
+	(*nSnakeCurrentLength)++; //Increment the length
 }
 
 //Updates the position and movement direction of each of the cell of snake after each time the position of the snake's head changes 
 void snakePositionUpdater(list<snakePositionLocater>* mSnake, int nCurrentSnakePosition, char cCurrenMovementDir, set<int>* sSnake, int* nSnakeLastBlockPos, char* cSnakeLastBlockMovementDir)
 {
-	*nSnakeLastBlockPos = mSnake->rbegin()->position;
-	int temp = mSnake->rbegin()->position;
-	*cSnakeLastBlockMovementDir = mSnake->rbegin()->movementDir;
+	*nSnakeLastBlockPos = mSnake->rbegin()->position; //Store the last block's position will be used in the snake length incrementer() while adding a new block at the end
+	*cSnakeLastBlockMovementDir = mSnake->rbegin()->movementDir; //Same as above
 	for (auto itr1 = next(mSnake->rbegin(), 1), itr2 = mSnake->rbegin(); itr1 != mSnake->rend(); itr1++, itr2++)
 	{
 		itr2->position = itr1->position;
 		itr2->movementDir = itr1->movementDir;
-	}
+	}	//Update the position and direction of each block with the block next to it.
 	mSnake->begin()->position = nCurrentSnakePosition;
-	mSnake->begin()->movementDir = cCurrenMovementDir;
+	mSnake->begin()->movementDir = cCurrenMovementDir; //Update the position and direction of first block(snake's head) with the new block that the snake has moved to
 
-	sSnake->erase(temp);
-	sSnake->insert(nCurrentSnakePosition);
+	sSnake->erase(*nSnakeLastBlockPos); //Delete the last block position from the position storing set
+	sSnake->insert(nCurrentSnakePosition); //Insert the position of new block that the snake has moved to
 }
 
 //Generates the food for the snake, if the generated food lies on the snake body it regenerates the food until the food position doesn't lie on the snake body
@@ -87,15 +86,15 @@ int foodGenerator(set<int>* sSnake, bool* bFoodEaten)
 {
 	int nFoodPosX = rand() % (nFieldWidth - 2);
 	int nFoodPosY = rand() % (nFieldHeight - 2);
-	int nFoodPosOnScreen = (nFoodPosY + nYOffset + 1) * nScreenWidth + (nFoodPosX + nXOffset + 1);
-	while (sSnake->count(nFoodPosOnScreen) != 0)
+	int nFoodPosOnScreen = (nFoodPosY + nYOffset + 1) * nScreenWidth + (nFoodPosX + nXOffset + 1); //Generate the food
+	while (sSnake->count(nFoodPosOnScreen) != 0) //Generate food until the position of food does not lie on the snake's body
 	{
 		nFoodPosX = rand() % (nFieldWidth - 2);
 		nFoodPosY = rand() % (nFieldHeight - 2);
 		nFoodPosOnScreen = (nFoodPosY + nYOffset + 1) * nScreenWidth + (nFoodPosX + nXOffset + 1);
 	}
 
-	*bFoodEaten = false;
+	*bFoodEaten = false; //When new food is created foodEaten should become false
 	return nFoodPosOnScreen;
 }
 
@@ -104,6 +103,8 @@ void changeDirAccToInput(char* cCurrentSnakeMovementDir, float* fpSnakeSpeedX, f
 {
 	wchar_t wcPrevSnakeHead = wcSnakeHead;
 	char cPrevSnakeMovementDir = *cCurrentSnakeMovementDir;
+	
+	//Check for inputs from keyboard
 	if (GetAsyncKeyState((unsigned short)'D') & 0x8000 || GetAsyncKeyState(VK_RIGHT) & 0x8000)
 	{
 		*cCurrentSnakeMovementDir = 'R';
@@ -125,12 +126,12 @@ void changeDirAccToInput(char* cCurrentSnakeMovementDir, float* fpSnakeSpeedX, f
 		wcSnakeHead = 0x25BC;
 	}
 
-	if (((*cCurrentSnakeMovementDir == 'R' && cPrevSnakeMovementDir == 'L') || (*cCurrentSnakeMovementDir == 'L' && cPrevSnakeMovementDir == 'R') || (*cCurrentSnakeMovementDir == 'U' && cPrevSnakeMovementDir == 'D') || (*cCurrentSnakeMovementDir == 'D' && cPrevSnakeMovementDir == 'U')) && nSnakeCurrentLength > 1)
+	if (((*cCurrentSnakeMovementDir == 'R' && cPrevSnakeMovementDir == 'L') || (*cCurrentSnakeMovementDir == 'L' && cPrevSnakeMovementDir == 'R') || (*cCurrentSnakeMovementDir == 'U' && cPrevSnakeMovementDir == 'D') || (*cCurrentSnakeMovementDir == 'D' && cPrevSnakeMovementDir == 'U')) && nSnakeCurrentLength > 1) //If snake has more than one block and it tries to move in the strict reverse of the current direction doesn't allow it, else it will bite itself and also in real world it is not possible
 	{
 		*cCurrentSnakeMovementDir = cPrevSnakeMovementDir;
 		wcSnakeHead = wcPrevSnakeHead;
 	}
-	else
+	else //Else update the movement of direction according to input
 	{
 		float speed = 2.0f;
 		switch (*cCurrentSnakeMovementDir)
@@ -166,7 +167,7 @@ int main()
 	float fSnakeSpeedX = 0.0f; //Speed of snake in X direction
 	float fSnakeSpeedY = 0.0f; //Speed of snake in Y direction
 	list<snakePositionLocater> mSnake; //Doubly linked list which holds the position and movement direction of each cell of the snake's body
-	set<int> sSnake; //Set to store the position of each cell of the snake's body
+	set<int> sSnake; //Set to store the position of each cell of the snake's body(This will be used at the time of food generation, to check whether the generated food lies on the body or not)
 	bool bFoodEaten = true; //Whether food has been eaten or not
 	int nFoodPosOnScreen; //Position(the index) of food on screen(in screen array)
 	int nSnakeLastBlockPos = nCurrentSnakePos; //Position(the index) of last block of snake on screen(in screen array)
