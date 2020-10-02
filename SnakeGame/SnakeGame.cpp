@@ -24,13 +24,19 @@
 
 using namespace std;
 
+//-------------------------- #DEFINES--------------------------------------//
+
+#define INIT_SCORE 0
+#define INIT_LEVEL 0
+
 //-------------GLOBAL VARIABLE DECLARATIONS------------------------//
-int nScreenWidth = 100; //Width of the window in character cells
+int nScreenWidth = 120; //Width of the window in character cells
 int nScreenHeight = 30; //Height of the window in character cells
 int nFieldWidth = 80; //Width of the playing area(field) in character cells
 int nFieldHeight = 26; //Height of the playing area(field) in character cells
 int nXOffset = 2; //Offset in x - direction from the left edge of the screen
 int nYOffset = 2; //Offset in y - direction from the top edge of the screen
+int nTotalLevels = 18;
 wchar_t wcSnakeHead = 0x25BA; //Unicode character which will represent the head of the snake
 wchar_t wcSnakeBody = L'#'; //Unicode character which will represent rest of the body of snake
 
@@ -41,6 +47,39 @@ typedef struct
 	int position;
 	char movementDir;
 }snakePositionLocater;
+
+
+void gameStatsRenderer(wchar_t* screen, int nScore, int nLevel)
+{
+
+	//Rendering the score
+	swprintf_s(&screen[2 * nScreenWidth + nFieldWidth + nXOffset + 4], 12, L"SCORE: %4d", nScore);
+
+	//Rendering the level
+	swprintf_s(&screen[(2 + 1) * nScreenWidth + nFieldWidth + nXOffset + 4], 12, L"LEVEL: %4d", nLevel);
+
+	//Rendering the level visually
+	for (int i = 0; i <= nTotalLevels + 1; i++)
+	{
+		screen[4 * nScreenWidth + nFieldWidth + nXOffset + 4 + i] = 0x2584;
+	}
+	screen[5 * nScreenWidth + nFieldWidth + nXOffset + 4] = 0x258C;
+	screen[5 * nScreenWidth + nFieldWidth + nXOffset + 4 + nTotalLevels + 1] = 0x2590;
+
+	int nBarIndicator = nLevel / 1;
+	
+
+	for (int i = 0; i < nBarIndicator; i++)
+	{
+		screen[5 * nScreenWidth + nFieldWidth + nXOffset + 4 + (i + 1)] = 0x2665;
+	}
+	for (int i = 0; i <= nTotalLevels + 1; i++)
+	{
+		screen[6 * nScreenWidth + nFieldWidth + nXOffset + 4 + i] = 0x2580;
+	}
+}
+
+
 
 //Method to determine whether snake has bitten itself(is out or not)
 bool isSnakeOut(int nCurrentSnakePos, set<int>* sSnake)
@@ -157,6 +196,8 @@ int main()
 
 
 	//Initial values of variables concerned with snake and gameplay
+
+
 	bool bGameOver = false; //Game is over or not
 	int nSnakeCurrentLength = 0; //Current length of the snake
 	float fSnakeX = nXOffset + nFieldWidth / 2; //X position of snake's head
@@ -172,9 +213,9 @@ int main()
 	int nFoodPosOnScreen; //Position(the index) of food on screen(in screen array)
 	int nSnakeLastBlockPos = nCurrentSnakePos; //Position(the index) of last block of snake on screen(in screen array)
 	char cSnakeLastBlockMovementDir = cCurrentSnakeMovementDir; //Movement direction of last block of snake.
-	int nScore = 0; //Game score
-	int nLevel = 1; //Game level
-	int nPointsReqToIncLevel = 5; //Point required to increase the level
+	int nScore = INIT_SCORE; //Game score
+	int nLevel = INIT_LEVEL; //Game level
+	int nPointsReqToIncLevel = 1; //Point required to increase the level
 
 	//To make the snake's head
 	snakeLengthIncrementer(&mSnake, nSnakeLastBlockPos, cSnakeLastBlockMovementDir, &sSnake, &nSnakeCurrentLength);
@@ -263,7 +304,7 @@ int main()
 			snakeLengthIncrementer(&mSnake, nSnakeLastBlockPos, cSnakeLastBlockMovementDir, &sSnake, &nSnakeCurrentLength); //Length of snake should increase
 		}
 
-		//------------------------------------------------RENDERING PART--------------------------------------//
+		//------------------------------------RENDERING PART---------------------------------//
 		//Rendering the food
 		screen[nFoodPosOnScreen] = 0x25CF;
 
@@ -284,12 +325,14 @@ int main()
 			screen[nCurrentSnakePos] = wcSnakeHead;
 			swprintf_s(&screen[34], 34, L"GAME OVER: NEXT TIME TRY HARDER!!");
 		}
+		if (nLevel == nTotalLevels)
+		{
+			swprintf_s(&screen[34], 17, L"BRAVO: YOU WON!!");
+		}
 
-		//Rendering the score
-		swprintf_s(&screen[2 * nScreenWidth + nFieldWidth + nXOffset + 4], 12, L"SCORE: %4d", nScore);
-
-		//Rendering the level
-		swprintf_s(&screen[(2 + 1) * nScreenWidth + nFieldWidth + nXOffset + 4], 12, L"LEVEL: %4d", nLevel);
+		
+		//Rendering game stats
+		gameStatsRenderer(screen, nScore, nLevel);
 
 		//Rendering the boundary of the playing area or field
 		for (int y = 0; y < nFieldHeight; y++)
@@ -304,8 +347,9 @@ int main()
 		WriteConsoleOutputCharacter(hConsole, screen, nScreenWidth * nScreenHeight, { 0,0 }, &dwBytesWritten); //Copies a number of characters(in this case the screen[] array) to consecutive cells of a console screen buffer, beginning at a specified location((0, 0) here) (Windows API console functions)
 
 		//If game is over then pause for five seconds and return to main function
-		if (bGameOver == true)
+		if (bGameOver == true || nLevel == nTotalLevels)
 		{
+			bGameOver = true; //when nLevel == nTotalLevels
 			int time_seconds = 5;
 			this_thread::sleep_for(chrono::seconds(time_seconds));
 		}
